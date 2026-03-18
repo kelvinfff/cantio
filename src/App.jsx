@@ -109,7 +109,7 @@ export default function App() {
       {/* Footer */}
       <footer style={s.footer}>
         <div style={{ ...s.logo, fontSize: 13 }}>CANTIO</div>
-        <div style={s.footerNote}>Vale do São Francisco · 2025</div>
+        <div style={s.footerNote}>Vale do São Francisco · 2026</div>
       </footer>
     </div>
   );
