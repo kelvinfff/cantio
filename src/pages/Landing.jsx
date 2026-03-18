@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { Music, Users, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Landing() {
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://tally.so/widgets/embed.js";
@@ -23,7 +26,12 @@ export default function Landing() {
           <div style={s.logo}>CANTIO</div>
           <div style={s.logoSub}>PLATAFORMA DE COMPOSIÇÕES</div>
         </div>
-        <button style={s.navPill} onClick={scrollToForm}>Quero participar</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={s.loginBtn} onClick={() => navigate("/login")}>
+            Entrar
+          </button>
+          <button style={s.navPill} onClick={scrollToForm}>Quero participar</button>
+        </div>
       </nav>
 
       {/* Hero */}
@@ -127,6 +135,7 @@ const s = {
   nav: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "space-between",
     padding: "20px 40px",
     borderBottom: "0.5px solid rgba(255,255,255,0.07)",
   },
@@ -318,5 +327,16 @@ const s = {
   footerNote: {
     fontSize: 10,
     color: "#4a4845",
+  },
+    loginBtn: {
+    background: "transparent",
+    border: "0.5px solid rgba(255,255,255,0.13)",
+    color: "#8a877f",
+    fontSize: 11,
+    letterSpacing: "0.1em",
+    padding: "6px 14px",
+    borderRadius: 20,
+    cursor: "pointer",
+    fontFamily: "Georgia, serif",
   },
 };
