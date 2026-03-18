@@ -70,18 +70,18 @@ export default function Dashboard() {
         ) : (
           <div style={s.grid}>
             {compositions.map((c) => (
-              <div key={c.id} style={s.card}>
-                <div style={s.cardGenre}>{c.genre || "—"}</div>
-                <div style={s.cardTitle}>{c.title}</div>
-                <div style={s.cardMeta}>
-                  {c.key && `Tom: ${c.key}`}{c.key && c.bpm && " · "}{c.bpm && `${c.bpm} bpm`}
-                </div>
-                <div style={{
-                  ...s.statusDot,
-                  background: c.status === "done" ? "#5a9e7a" : c.status === "review" ? "#c8935a" : "#4a4845"
-                }} />
-              </div>
-            ))}
+                <div key={c.id} style={s.card} onClick={() => navigate(`/composition/${c.id}`)}>
+                    <div style={s.cardGenre}>{c.genre || "—"}</div>
+                    <div style={s.cardTitle}>{c.title}</div>
+                    <div style={s.cardMeta}>
+                        {c.key && `Tom: ${c.key}`}{c.key && c.bpm && " · "}{c.bpm && `${c.bpm} bpm`}
+                    </div>
+                    <div style={{
+                        ...s.statusDot,
+                        background: c.status === "done" ? "#5a9e7a" : c.status === "review" ? "#c8935a" : "#4a4845"
+                    }} />
+                    </div>
+                ))}
           </div>
         )}
       </div>

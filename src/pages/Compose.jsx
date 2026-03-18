@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function Compose() {
+  const { id } = useParams();
+  const isEditing = !!id;
+
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("Forró");
   const [key, setKey] = useState("");
@@ -13,60 +16,80 @@ export default function Compose() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!isEditing) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("compositions")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (data) {
+        setTitle(data.title || "");
+        setGenre(data.genre || "Forró");
+        setKey(data.key || "");
+        setBpm(data.bpm || "");
+        setLyrics(data.lyrics || "");
+        setChords(data.chords || "");
+      }
+    };
+    load();
+  }, [id]);
+
   const handleSave = async (status) => {
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log("usuário:", user);
-    if (!user) { navigate("/login"); return; }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) { navigate("/login"); return; }
 
-    const { error, data } = await supabase.from("compositions").insert({
-        title,
-        genre,
-        key,
-        bpm: bpm ? parseInt(bpm) : null,
-        lyrics,
-        chords,
-        status,
-        owner_id: user.id,
-        });
+  let error;
 
-        console.log("erro:", error);
-        console.log("data:", data);
-        
-    if (error) {
-      setError(error.message);
-    } else {
-      navigate("/dashboard");
-    }
+  if (isEditing) {
+    const { error: updateError } = await supabase
+      .from("compositions")
+      .update({ title, genre, key, bpm: bpm ? parseInt(bpm) : null, lyrics, chords, status })
+      .eq("id", id);
+    error = updateError;
+  } else {
+    const { error: insertError } = await supabase
+      .from("compositions")
+      .insert({ title, genre, key, bpm: bpm ? parseInt(bpm) : null, lyrics, chords, status, owner_id: user.id });
+    error = insertError;
+  }
 
-    setLoading(false);
-  };
+  if (error) {
+    setError(error.message);
+  } else {
+    navigate(isEditing ? `/composition/${id}` : "/dashboard");
+  }
+
+  setLoading(false);
+};
 
   return (
-    <div style={s.page}>
-      <nav style={s.nav}>
-        <div style={s.logo}>CANTIO</div>
-        <button style={s.backBtn} onClick={() => navigate("/dashboard")}>
-          ← Voltar
-        </button>
-      </nav>
+  <div style={s.page}>
+    <nav style={s.nav}>
+      <div style={s.logo}>CANTIO</div>
+      <button style={s.backBtn} onClick={() => navigate(isEditing ? `/composition/${id}` : "/dashboard")}>
+        ← Voltar
+      </button>
+    </nav>
 
-      <div style={s.body}>
-        <div style={s.title}>Nova composição</div>
+    <div style={s.body}>
+      <div style={s.title}>{isEditing ? "Editar composição" : "Nova composição"}</div>
 
-        <div style={s.form}>
-          <div style={s.row}>
-            <div style={s.field}>
-              <div style={s.label}>TÍTULO</div>
-              <input
-                style={s.input}
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Nome da música..."
-              />
+      <div style={s.form}>
+        <div style={s.row}>
+          <div style={s.field}>
+            <div style={s.label}>TÍTULO</div>
+            <input
+              style={s.input}
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Nome da música..."
+            />
             </div>
             <div style={s.field}>
               <div style={s.label}>GÊNERO</div>
