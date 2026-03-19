@@ -7,6 +7,8 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [compositions, setCompositions] = useState([]);
+  const [pendingInvites, setPendingInvites] = useState(0);
+  const [coauthorIds, setCoauthorIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -35,13 +37,23 @@ export default function Dashboard() {
         .eq("user_id", user.id)
         .eq("accepted", true);
 
+      const { data: pendingData } = await supabase
+        .from("coauthors")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("accepted", false);
+
+      setPendingInvites(pendingData?.length || 0);
+
       let coauthorComps = [];
+      let coauthorCompIds = [];
       if (coauthorData && coauthorData.length > 0) {
-        const ids = coauthorData.map((c) => c.composition_id);
+        coauthorCompIds = coauthorData.map((c) => c.composition_id);
+        setCoauthorIds(coauthorCompIds);
         const { data: colabComps } = await supabase
           .from("compositions")
           .select("*")
-          .in("id", ids)
+          .in("id", coauthorCompIds)
           .order("created_at", { ascending: false });
         coauthorComps = colabComps || [];
       }
@@ -67,6 +79,12 @@ export default function Dashboard() {
         <div style={s.logo}>CANTIO</div>
         <div style={s.navRight}>
           {profile && <div style={s.userName}>{profile.full_name}</div>}
+          <button style={s.invitesBtn} onClick={() => navigate("/invites")}>
+            Convites
+            {pendingInvites > 0 && (
+              <span style={s.badge}>{pendingInvites}</span>
+            )}
+          </button>
           <button style={s.logoutBtn} onClick={handleLogout}>
             <LogOut size={14} color="#4a4845" />
           </button>
@@ -89,25 +107,31 @@ export default function Dashboard() {
           </div>
         ) : (
           <div style={s.grid}>
-            {compositions.map((c) => (
+            {compositions.map((c) => {
+              const isCoauthor = coauthorIds.includes(c.id);
+              return (
                 <div key={c.id} style={s.card} onClick={() => navigate(`/composition/${c.id}`)}>
+                  <div style={s.cardTop}>
                     <div style={s.cardGenre}>{c.genre || "—"}</div>
-                    <div style={s.cardTitle}>{c.title}</div>
-                    <div style={s.cardMeta}>
-                        {c.key && `Tom: ${c.key}`}{c.key && c.bpm && " · "}{c.bpm && `${c.bpm} bpm`}
-                    </div>
-                    <div style={{
-                        ...s.statusDot,
-                        background: c.status === "done" ? "#5a9e7a" : c.status === "review" ? "#c8935a" : "#4a4845"
-                    }} />
-                    </div>
-                ))}
+                    {isCoauthor && <div style={s.coauthorTag}>coautor</div>}
+                  </div>
+                  <div style={s.cardTitle}>{c.title}</div>
+                  <div style={s.cardMeta}>
+                    {c.key && `Tom: ${c.key}`}{c.key && c.bpm && " · "}{c.bpm && `${c.bpm} bpm`}
+                  </div>
+                  <div style={{
+                    ...s.statusDot,
+                    background: c.status === "done" ? "#5a9e7a" : c.status === "review" ? "#c8935a" : "#4a4845"
+                  }} />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
   );
-}
+  }
 
 const s = {
   page: { background: "#0c0c0d", minHeight: "100vh", color: "#edeae4", fontFamily: "Georgia, serif" },
@@ -131,4 +155,8 @@ const s = {
   cardMeta: { fontSize: 11, color: "#4a4845" },
   statusDot: { width: 6, height: 6, borderRadius: "50%", marginTop: 10 },
   invitesBtn: { background: "transparent", border: "0.5px solid rgba(255,255,255,0.1)", color: "#8a877f", fontSize: 11, letterSpacing: "0.08em", padding: "5px 12px", borderRadius: 8, cursor: "pointer", fontFamily: "Georgia, serif" },
+  invitesBtn: { background: "transparent", border: "0.5px solid rgba(255,255,255,0.1)", color: "#8a877f", fontSize: 11, letterSpacing: "0.08em", padding: "5px 12px", borderRadius: 8, cursor: "pointer", fontFamily: "Georgia, serif", display: "flex", alignItems: "center", gap: 6 },
+  badge: { background: "#c8935a", color: "#1a0f05", fontSize: 10, fontWeight: "500", padding: "1px 6px", borderRadius: 8 },
+  cardTop: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
+  coauthorTag: { fontSize: 9, color: "#5a82c8", background: "rgba(90,130,200,0.12)", padding: "2px 7px", borderRadius: 8, letterSpacing: "0.08em" },
 };
