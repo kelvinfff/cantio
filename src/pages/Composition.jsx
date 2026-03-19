@@ -88,6 +88,21 @@ export default function Composition() {
     setCoauthors(coauthorData || []);
   };
 
+  const handleRemoveCoauthor = async (coauthorId) => {
+    const confirmMsg = composition.owner_id === currentUser?.id
+      ? "Tem certeza que deseja remover este coautor?"
+      : "Tem certeza que deseja cancelar sua participação?";
+
+    if (!confirm(confirmMsg)) return;
+
+    await supabase
+      .from("coauthors")
+      .delete()
+      .eq("id", coauthorId);
+
+    setCoauthors(coauthors.filter((c) => c.id !== coauthorId));
+  };
+
   const statusLabel = {
     draft: "Rascunho",
     review: "Em revisão",
@@ -157,23 +172,35 @@ export default function Composition() {
 
         <div style={s.divider} />
 
-        {composition.owner_id === currentUser?.id && (
-          <div style={s.section}>
-            <div style={s.sectionLabel}>COAUTORES</div>
+        <div style={s.section}>
+          <div style={s.sectionLabel}>COAUTORES</div>
 
-            {coauthors.length > 0 && (
-              <div style={s.coauthorList}>
-                {coauthors.map((c) => (
-                  <div key={c.id} style={s.coauthorItem}>
-                    <div style={s.coauthorRole}>{c.role}</div>
+          {coauthors.length > 0 ? (
+            <div style={s.coauthorList}>
+              {coauthors.map((c) => (
+                <div key={c.id} style={s.coauthorItem}>
+                  <div style={s.coauthorRole}>{c.role}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ ...s.coauthorStatus, color: c.accepted ? "#5a9e7a" : "#c8935a" }}>
                       {c.accepted ? "Aceito" : "Pendente"}
                     </div>
+                    {(composition.owner_id === currentUser?.id || c.user_id === currentUser?.id) && (
+                      <button
+                        style={s.removeBtn}
+                        onClick={() => handleRemoveCoauthor(c.id)}
+                      >
+                        {c.user_id === currentUser?.id && composition.owner_id !== currentUser?.id ? "Sair" : "Remover"}
+                      </button>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={s.empty}>Nenhum coautor ainda.</div>
+          )}
 
+          {composition.owner_id === currentUser?.id && (
             <div style={s.inviteForm}>
               <div style={s.field}>
                 <div style={s.sectionLabel}>CONVIDAR COMPOSITOR</div>
@@ -204,8 +231,8 @@ export default function Composition() {
                 Enviar convite
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -241,4 +268,5 @@ const s = {
   error: { fontSize: 12, color: "#e24b4a", background: "rgba(226,75,74,0.1)", padding: "8px 12px", borderRadius: 6 },
   success: { fontSize: 12, color: "#5a9e7a", background: "rgba(90,158,122,0.1)", padding: "8px 12px", borderRadius: 6 },
   btnPrimary: { background: "#c8935a", color: "#1a0f05", border: "none", borderRadius: 8, padding: "11px 20px", fontSize: 12, letterSpacing: "0.08em", cursor: "pointer", fontFamily: "Georgia, serif", alignSelf: "flex-start" },
+  removeBtn: { background: "transparent", border: "0.5px solid rgba(226,75,74,0.3)", color: "#e24b4a", fontSize: 10, padding: "3px 8px", borderRadius: 6, cursor: "pointer", fontFamily: "Georgia, serif" },
 };
