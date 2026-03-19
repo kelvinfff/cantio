@@ -7,14 +7,23 @@ export default function Register() {
   const [city, setCity] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accessCode, setAccessCode] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const VALID_CODE = "rappergangsta";
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (accessCode !== VALID_CODE) {
+      setError("Código de acesso inválido.");
+      setLoading(false);
+      return;
+    }
 
     const { data, error } = await supabase.auth.signUp({ email, password });
 
@@ -43,6 +52,9 @@ export default function Register() {
       <div style={s.card}>
         <div style={s.logo}>CANTIO</div>
         <div style={s.logoSub}>CRIAR CONTA</div>
+        <div style={s.devNotice}>
+        O Cantio está em fase de desenvolvimento. Para criar uma conta é necessário fazer parte da equipe de testes. Entre em contato para solicitar seu código de acesso.
+        </div>
         <form onSubmit={handleRegister} style={s.form}>
           <div style={s.field}>
             <div style={s.label}>NOME COMPLETO</div>
@@ -85,6 +97,17 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="mínimo 6 caracteres"
+              required
+            />
+          </div>
+          <div style={s.field}>
+            <div style={s.label}>CÓDIGO DE ACESSO</div>
+            <input
+              style={s.input}
+              type="text"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              placeholder="Código fornecido pelo Cantio"
               required
             />
           </div>
@@ -185,5 +208,15 @@ const s = {
   link: {
     color: "#c8935a",
     textDecoration: "none",
+  },
+  devNotice: {
+  fontSize: 11,
+  color: "#8a877f",
+  background: "rgba(200,147,90,0.08)",
+  border: "0.5px solid rgba(200,147,90,0.2)",
+  borderRadius: 8,
+  padding: "10px 12px",
+  lineHeight: 1.7,
+  marginBottom: 8,
   },
 };
