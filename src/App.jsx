@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
 import Compose from "./pages/Compose";
 import Composition from "./pages/Composition";
+import Invites from "./pages/Invites";
 
 export default function App() {
   return (
@@ -15,8 +16,9 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/compose" element={<Compose />} />
-        <Route path="/composition/:id" element={<Composition />} />
         <Route path="/compose/:id" element={<Compose />} />
+        <Route path="/composition/:id" element={<Composition />} />
+        <Route path="/invites" element={<Invites />} />
       </Routes>
     </BrowserRouter>
   );

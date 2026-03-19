@@ -23,12 +23,32 @@ export default function Dashboard() {
         .single();
       setProfile(profileData);
 
-      const { data: comps } = await supabase
+      const { data: ownComps } = await supabase
         .from("compositions")
         .select("*")
         .eq("owner_id", user.id)
         .order("created_at", { ascending: false });
-      setCompositions(comps || []);
+
+      const { data: coauthorData } = await supabase
+        .from("coauthors")
+        .select("composition_id")
+        .eq("user_id", user.id)
+        .eq("accepted", true);
+
+      let coauthorComps = [];
+      if (coauthorData && coauthorData.length > 0) {
+        const ids = coauthorData.map((c) => c.composition_id);
+        const { data: colabComps } = await supabase
+          .from("compositions")
+          .select("*")
+          .in("id", ids)
+          .order("created_at", { ascending: false });
+        coauthorComps = colabComps || [];
+      }
+
+      const allComps = [...(ownComps || []), ...coauthorComps];
+      const unique = allComps.filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i);
+      setCompositions(unique);
       setLoading(false);
     };
     getUser();
@@ -110,4 +130,5 @@ const s = {
   cardTitle: { fontSize: 13, color: "#edeae4", marginBottom: 6 },
   cardMeta: { fontSize: 11, color: "#4a4845" },
   statusDot: { width: 6, height: 6, borderRadius: "50%", marginTop: 10 },
+  invitesBtn: { background: "transparent", border: "0.5px solid rgba(255,255,255,0.1)", color: "#8a877f", fontSize: 11, letterSpacing: "0.08em", padding: "5px 12px", borderRadius: 8, cursor: "pointer", fontFamily: "Georgia, serif" },
 };
