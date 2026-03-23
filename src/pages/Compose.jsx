@@ -41,30 +41,43 @@ export default function Compose() {
     setError(null);
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { navigate("/login"); return; }
-
-    let error;
+    if (!user) {
+      setLoading(false);
+      navigate("/login");
+      return;
+    }
 
     if (isEditing) {
-      const { error: updateError, data } = await supabase
+      const { error: updateError } = await supabase
         .from("compositions")
         .update({ title, genre, key, bpm: bpm ? parseInt(bpm) : null, lyrics, chords, status })
         .eq("id", id);
-      error = updateError;
-    } else {
-      const { error: insertError } = await supabase
-        .from("compositions")
-        .insert({ title, genre, key, bpm: bpm ? parseInt(bpm) : null, lyrics, chords, status, owner_id: user.id });
-      error = insertError;
+
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(false);
+      navigate(`/composition/${id}`);
+      return;
     }
 
-    if (error) {
-      setError(error.message);
-    } else {
-      navigate(isEditing ? `/composition/${id}` : "/dashboard");
+    const { data: insertedComposition, error: insertError } = await supabase
+      .from("compositions")
+      .insert({ title, genre, key, bpm: bpm ? parseInt(bpm) : null, lyrics, chords, status, owner_id: user.id })
+      .select("id")
+      .single();
+
+    if (insertError) {
+      setError(insertError.message);
+      setLoading(false);
+      return;
     }
 
     setLoading(false);
+    navigate(insertedComposition?.id ? `/composition/${insertedComposition.id}` : "/dashboard");
   };
 
   return (

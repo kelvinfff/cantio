@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [compositions, setCompositions] = useState([]);
   const [pendingInvites, setPendingInvites] = useState(0);
   const [coauthorIds, setCoauthorIds] = useState([]);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -25,11 +26,16 @@ export default function Dashboard() {
         .single();
       setProfile(profileData);
 
-      const { data: ownComps } = await supabase
+      const { data: ownComps, error: ownCompsError } = await supabase
         .from("compositions")
         .select("*")
-        .eq("owner_id", user.id)
-        .order("created_at", { ascending: false });
+        .eq("owner_id", user.id);
+
+      if (ownCompsError) {
+        setError(`Falha ao carregar composições: ${ownCompsError.message}`);
+        setLoading(false);
+        return;
+      }
 
       const { data: coauthorData } = await supabase
         .from("coauthors")
@@ -50,11 +56,17 @@ export default function Dashboard() {
       if (coauthorData && coauthorData.length > 0) {
         coauthorCompIds = coauthorData.map((c) => c.composition_id);
         setCoauthorIds(coauthorCompIds);
-        const { data: colabComps } = await supabase
+        const { data: colabComps, error: colabCompsError } = await supabase
           .from("compositions")
           .select("*")
-          .in("id", coauthorCompIds)
-          .order("created_at", { ascending: false });
+          .in("id", coauthorCompIds);
+
+        if (colabCompsError) {
+          setError(`Falha ao carregar colaborações: ${colabCompsError.message}`);
+          setLoading(false);
+          return;
+        }
+
         coauthorComps = colabComps || [];
       }
 
@@ -98,6 +110,8 @@ export default function Dashboard() {
             <Plus size={14} color="#1a0f05" /> Nova composição
           </button>
         </div>
+
+        {error && <div style={s.error}>{error}</div>}
 
         {compositions.length === 0 ? (
           <div style={s.empty}>
@@ -148,6 +162,7 @@ const s = {
   empty: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", gap: 12 },
   emptyText: { fontSize: 14, color: "#4a4845" },
   emptySub: { fontSize: 12, color: "#2a2826" },
+  error: { fontSize: 12, color: "#e24b4a", background: "rgba(226,75,74,0.1)", padding: "10px 12px", borderRadius: 6, marginBottom: 12 },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 },
   card: { background: "#131314", border: "0.5px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "16px", cursor: "pointer" },
   cardGenre: { fontSize: 10, color: "#c8935a", letterSpacing: "0.1em", background: "rgba(200,147,90,0.12)", padding: "2px 8px", borderRadius: 8, display: "inline-block", marginBottom: 8 },
