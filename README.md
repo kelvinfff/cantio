@@ -1,16 +1,25 @@
-# React + Vite
+# Cantio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma de gerenciamento de composições musicais desenvolvida para compositores do Vale do São Francisco e região Nordeste do Brasil.
 
-Currently, two official plugins are available:
+## Sobre
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+O Cantio permite que compositores cadastrem suas obras com letra, cifra e informações musicais, colaborem com coautores e acompanhem o status de cada composição.
 
-## React Compiler
+## Funcionalidades
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Cadastro e autenticação de compositores
+- Biblioteca pessoal de composições
+- Cadastro de letra, cifra, tom e andamento
+- Convite e gestão de coautores
+- Status de composição (rascunho, em revisão, finalizada)
 
-## Expanding the ESLint configuration
+## Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React + Vite
+- Supabase (banco de dados e autenticação)
+- Vercel (hospedagem)
+
+## Status
+
+Em desenvolvimento ativo. Acesso restrito à equipe de testes.
